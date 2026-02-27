@@ -2,7 +2,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
 import 'package:teacher_tracker/features/auth/views/auth_view.dart';
-import 'package:teacher_tracker/features/auth/views/sigup.dart';
 import 'package:teacher_tracker/firebase_options.dart';
 import 'package:provider/provider.dart';
 
@@ -11,7 +10,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (_) => AuthViewModel())
+      ChangeNotifierProvider(create: (_) => AuthViewModel()),
     ],
     child: const MyApp()));
 }
@@ -22,7 +21,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: SignInView(),
+      home: AuthView(),
     );
   }
 }

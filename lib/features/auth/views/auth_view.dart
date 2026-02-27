@@ -1,10 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:teacher_tracker/core/services/firebase_user_login_db.dart';
+import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
+import 'package:teacher_tracker/features/dashboard/admin/admin_dashboard_view.dart';
+import 'package:teacher_tracker/features/dashboard/teachers/teachers_dashboard_view.dart';
+import 'package:teacher_tracker/features/userdatainitalmodel/userinitial_model.dart';
 
-class AuthView extends StatelessWidget {
+class AuthView extends StatefulWidget {
   const AuthView({super.key});
 
   @override
+  State<AuthView> createState() => _AuthViewState();
+}
+
+class _AuthViewState extends State<AuthView> {
+  final TextEditingController _emailController = TextEditingController();
+
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthViewModel>();
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -15,13 +39,11 @@ class AuthView extends StatelessWidget {
             children: [
               const Text(
                 'Login',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 40),
               TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(
@@ -33,6 +55,7 @@ class AuthView extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               TextField(
+                controller: _passwordController,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(
@@ -47,18 +70,34 @@ class AuthView extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     // Login logic will go here
+                    UserinitialModel? userData = await FirebaseUserLoginDb()
+                        .getUserDetail(auth.user!.uid.toString());
+                    if (!context.mounted) return;
+                    if (userData?.role == 'admin') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AdminDashboardView(),
+                        ),
+                      );
+                    }
+                    if (userData?.role == 'teacher') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TeachersDashboardView(),
+                        ),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(fontSize: 18),
-                  ),
+                  child: const Text('Login', style: TextStyle(fontSize: 18)),
                 ),
               ),
               const SizedBox(height: 20),
