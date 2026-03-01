@@ -4,7 +4,6 @@ import 'package:teacher_tracker/core/services/firebase_user_login_db.dart';
 import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
 import 'package:teacher_tracker/features/dashboard/admin/admin_dashboard_view.dart';
 import 'package:teacher_tracker/features/dashboard/teachers/teachers_dashboard_view.dart';
-import 'package:teacher_tracker/features/userdatainitalmodel/userinitial_model.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -27,8 +26,39 @@ class _AuthViewState extends State<AuthView> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthViewModel>();
-    
+    final authVM = context.watch<AuthViewModel>();
+
+    if (authVM.isLoading) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator.adaptive()),
+      );
+    }
+
+    if (authVM.error.toString().isNotEmpty) debugPrint(authVM.error.toString());
+
+    if (authVM.user != null) {
+      return FutureBuilder(
+        future: FirebaseUserLoginDb().getUserDetail(authVM.user!.uid),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator.adaptive()),
+            );
+          }
+
+          final role = snapshot.data!.role;
+
+          if (role == 'admin') {
+            return AdminDashboardView();
+          }
+          if (role == 'teacher') {
+            return AdminDashboardView();
+          }
+          return Scaffold(body: Center(child: Text('No role exist')));
+        },
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -71,25 +101,36 @@ class _AuthViewState extends State<AuthView> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
-                    // Login logic will go here
-                    UserinitialModel? userData = await FirebaseUserLoginDb()
-                        .getUserDetail(auth.user!.uid.toString());
-                    if (!context.mounted) return;
-                    if (userData?.role == 'admin') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AdminDashboardView(),
-                        ),
-                      );
-                    }
-                    if (userData?.role == 'teacher') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TeachersDashboardView(),
-                        ),
-                      );
+                    authVM.signIn(
+                      _emailController.text.trim(),
+                      _passwordController.text.trim(),
+                    );
+
+                    final userData = authVM.user;
+                    if (userData == null) {
+                      return;
+                    } else {
+                      final userRole = await FirebaseUserLoginDb()
+                          .getUserDetail(userData.uid);
+                      if (!context.mounted) {
+                        return;
+                      }
+                      if (userRole?.role.toString() == 'admin') {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AdminDashboardView(),
+                          ),
+                        );
+                      }
+                      if (userRole?.role.toString() == 'teacher') {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TeachersDashboardView(),
+                          ),
+                        );
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(
