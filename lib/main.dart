@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
 import 'package:teacher_tracker/features/auth/views/auth_view.dart';
+import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 import 'package:teacher_tracker/firebase_options.dart';
 import 'package:provider/provider.dart';
 
@@ -10,7 +11,10 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AuthViewModel())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => TeacherViewmodel()),
+      ],
       child: const MyApp(),
     ),
   );

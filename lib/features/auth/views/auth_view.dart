@@ -52,7 +52,7 @@ class _AuthViewState extends State<AuthView> {
             return AdminDashboardView();
           }
           if (role == 'teacher') {
-            return AdminDashboardView();
+            return TeachersDashboardView();
           }
           return Scaffold(body: Center(child: Text('No role exist')));
         },
@@ -101,7 +101,7 @@ class _AuthViewState extends State<AuthView> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
-                    authVM.signIn(
+                    await authVM.signIn(
                       _emailController.text.trim(),
                       _passwordController.text.trim(),
                     );

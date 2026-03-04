@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:teacher_tracker/core/widgets/stats_card.dart';
 import 'package:teacher_tracker/core/widgets/teacher_list_item.dart';
+import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
+import 'package:teacher_tracker/features/auth/views/sigup.dart';
+
 class AdminDashboardView extends StatefulWidget {
   @override
   State<AdminDashboardView> createState() => _AdminDashboardViewState();
@@ -9,7 +13,7 @@ class AdminDashboardView extends StatefulWidget {
 class _AdminDashboardViewState extends State<AdminDashboardView> {
   @override
   Widget build(BuildContext context) {
-    // Sample data for UI only
+    final _authVM = context.watch<AuthViewModel>();
     final stats = [
       {"title": "Total Teachers", "value": "25", "color": Colors.blue},
       {"title": "Active Classes", "value": "12", "color": Colors.green},
@@ -29,6 +33,30 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
         actions: [
           IconButton(icon: Icon(Icons.notifications), onPressed: () {}),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            ListTile(
+              leading: Icon(Icons.person_add_alt_1_rounded),
+              title: Text('Create New User'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SignInView()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Logout'),
+              onTap: () async {
+                await _authVM.signOut();
+              },
+            ),
+            
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -56,8 +84,10 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             SizedBox(height: 20),
 
             // Teachers list
-            Text("Teachers",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              "Teachers",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 10),
             Expanded(
               child: ListView.separated(
