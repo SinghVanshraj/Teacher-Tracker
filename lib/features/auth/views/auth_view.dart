@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_tracker/core/services/firebase_user_login_db.dart';
 import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
-import 'package:teacher_tracker/features/dashboard/admin/admin_dashboard_view.dart';
-import 'package:teacher_tracker/features/dashboard/teachers/teachers_dashboard_view.dart';
+import 'package:teacher_tracker/features/dashboard/admin/admin_root_screen.dart';
+import 'package:teacher_tracker/features/dashboard/teachers/teacher_root_screen.dart';
 
 class AuthView extends StatefulWidget {
   const AuthView({super.key});
@@ -49,10 +49,10 @@ class _AuthViewState extends State<AuthView> {
           final role = snapshot.data!.role;
 
           if (role == 'admin') {
-            return AdminDashboardView();
+            return AdminRootScreen();
           }
           if (role == 'teacher') {
-            return TeachersDashboardView();
+            return TeacherRootScreen();
           }
           return Scaffold(body: Center(child: Text('No role exist')));
         },
@@ -119,7 +119,7 @@ class _AuthViewState extends State<AuthView> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => AdminDashboardView(),
+                            builder: (context) => AdminRootScreen(),
                           ),
                         );
                       }
@@ -127,7 +127,7 @@ class _AuthViewState extends State<AuthView> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TeachersDashboardView(),
+                            builder: (context) => TeacherRootScreen(),
                           ),
                         );
                       }

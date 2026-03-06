@@ -4,26 +4,45 @@ import 'package:teacher_tracker/core/widgets/stats_card.dart';
 import 'package:teacher_tracker/core/widgets/teacher_list_item.dart';
 import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
 import 'package:teacher_tracker/features/auth/views/sigup.dart';
+import 'package:teacher_tracker/features/dashboard/admin/admin_view_model.dart';
 
 class AdminDashboardView extends StatefulWidget {
+  const AdminDashboardView({super.key});
+
   @override
   State<AdminDashboardView> createState() => _AdminDashboardViewState();
 }
 
 class _AdminDashboardViewState extends State<AdminDashboardView> {
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (!mounted) return null;
+      context.read<AdminViewModel>().fetchTeachers();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final _authVM = context.watch<AuthViewModel>();
+    final _teachersList = context.watch<AdminViewModel>();
+    final int? numberOfTeacher = _teachersList.teachers?.docs.length;
+    final listOfTeachers = _teachersList.teachers?.docs.toList();
+    if (_teachersList.isLoading) {
+      return Center(child: const CircularProgressIndicator.adaptive());
+    }
+    if (_teachersList.error != null) {
+      return Center(child: Text(_teachersList.error.toString()));
+    }
     final stats = [
-      {"title": "Total Teachers", "value": "25", "color": Colors.blue},
+      {
+        "title": "Total Teachers",
+        "value": numberOfTeacher.toString(),
+        "color": Colors.blue,
+      },
       {"title": "Active Classes", "value": "12", "color": Colors.green},
       {"title": "Pending Tasks", "value": "5", "color": Colors.orange},
-    ];
-
-    final teachers = [
-      {"name": "John Doe", "subject": "Math", "status": "Online"},
-      {"name": "Alice Smith", "subject": "Physics", "status": "Offline"},
-      {"name": "Robert Lee", "subject": "Chemistry", "status": "Online"},
     ];
 
     return Scaffold(
@@ -54,7 +73,6 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
                 await _authVM.signOut();
               },
             ),
-            
           ],
         ),
       ),
@@ -63,13 +81,12 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Stats cards
             SizedBox(
               height: 120,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: stats.length,
-                separatorBuilder: (_, __) => SizedBox(width: 16),
+                separatorBuilder: (a, b) => SizedBox(width: 16),
                 itemBuilder: (context, index) {
                   final stat = stats[index];
                   return StatsCard(
@@ -83,7 +100,6 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
 
             SizedBox(height: 20),
 
-            // Teachers list
             Text(
               "Teachers",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -91,14 +107,14 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
             SizedBox(height: 10),
             Expanded(
               child: ListView.separated(
-                itemCount: teachers.length,
-                separatorBuilder: (_, __) => SizedBox(height: 10),
+                itemCount: listOfTeachers?.length ?? 0,
+                separatorBuilder: (a, b) => SizedBox(height: 10),
                 itemBuilder: (context, index) {
-                  final teacher = teachers[index];
+                  final teacher = listOfTeachers![index].data() as Map<String,dynamic>;
                   return TeacherListItem(
-                    name: teacher["name"]!,
-                    subject: teacher["subject"]!,
-                    status: teacher["status"]!,
+                    name: teacher['name'] ?? '',
+                    subject: teacher['department'] ?? '',
+                    status: 'online',
                   );
                 },
               ),

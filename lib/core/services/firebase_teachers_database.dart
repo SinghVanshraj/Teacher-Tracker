@@ -52,4 +52,8 @@ class FirebaseTeachersDatabase {
       return null;
     }
   }
+
+  Future<QuerySnapshot> getTeachers() {
+    return _firestore.collection("teachers").get();
+  }
 }
