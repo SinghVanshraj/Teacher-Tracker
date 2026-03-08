@@ -37,6 +37,7 @@ class TeacherViewmodel extends ChangeNotifier {
     String name,
     String email,
     String department,
+    String instituteId,
     String workingStartTime,
     String workingEndTime,
   ) async {
@@ -50,6 +51,7 @@ class TeacherViewmodel extends ChangeNotifier {
         name: name,
         email: email,
         department: department,
+        instituteId: instituteId,
         workingStartTime: workingStartTime,
         workingEndTime: workingEndTime,
       );
@@ -62,4 +64,5 @@ class TeacherViewmodel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
 }

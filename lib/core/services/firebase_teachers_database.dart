@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:teacher_tracker/core/services/firebase_services.dart';
+import 'package:teacher_tracker/features/institute/models/institute_model.dart';
 import 'package:teacher_tracker/features/teacher/models/teacher_model.dart';
 
 class FirebaseTeachersDatabase {
@@ -15,11 +16,21 @@ class FirebaseTeachersDatabase {
     return TeacherModel.fromJson(data);
   }
 
+  InstituteModel? _instituteDataBase(DocumentSnapshot doc) {
+    if (!doc.exists) return null;
+
+    final data = doc.data() as Map<String, dynamic>?;
+    if (data == null) return null;
+
+    return InstituteModel.fromJson(data);
+  }
+
   Future<TeacherModel?> addTeacherDetail({
     required String uid,
     required String name,
     required String email,
     required String department,
+    required String instituteId,
     required String workingStartTime,
     required String workingEndTime,
   }) async {
@@ -29,6 +40,7 @@ class FirebaseTeachersDatabase {
         'name': name,
         'email': email,
         'department': department,
+        'instituteId': instituteId,
         'workingStartTime': workingStartTime,
         'workingEndTime': workingEndTime,
       };
@@ -55,5 +67,18 @@ class FirebaseTeachersDatabase {
 
   Future<QuerySnapshot> getTeachers() {
     return _firestore.collection("teachers").get();
+  }
+
+  Future<InstituteModel?> getInstitute({required String instituteId}) async {
+    try {
+      final docRef = await _firestore
+          .collection("institutes")
+          .doc(instituteId)
+          .get();
+      return _instituteDataBase(docRef);
+    } catch (e) {
+      debugPrint(e.toString());
+      return null;
+    }
   }
 }

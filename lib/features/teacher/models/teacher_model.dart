@@ -2,13 +2,15 @@ class TeacherModel {
   final String name;
   final String email;
   final String department;
-  final DateTime workingStartTime;
-  final DateTime workingEndTime;
+  final String instituteId;
+  final String workingStartTime;
+  final String workingEndTime;
 
   TeacherModel({
     required this.name,
     required this.email,
     required this.department,
+    required this.instituteId,
     required this.workingStartTime,
     required this.workingEndTime,
   });
@@ -18,6 +20,7 @@ class TeacherModel {
       'name': name,
       'email': email,
       'department': department,
+      'instituteId': instituteId,
       'workingStartTime': workingStartTime,
       'workingEndTime': workingEndTime,
     };
@@ -28,6 +31,7 @@ class TeacherModel {
       name: json['name'],
       email: json['email'],
       department: json['department'],
+      instituteId: json['instituteId'],
       workingStartTime: json['workingStartTime'],
       workingEndTime: json['workingEndTime'],
     );
