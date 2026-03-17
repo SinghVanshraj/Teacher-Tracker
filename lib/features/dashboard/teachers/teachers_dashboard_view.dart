@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
+import 'package:teacher_tracker/features/institute/viewmodels/institute_view_model.dart';
 import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 
 class TeachersDashboardView extends StatefulWidget {
@@ -19,20 +20,30 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
     Future.microtask(() {
       if (!mounted) return;
       final uid = context.read<AuthViewModel>().user!.uid;
-      debugPrint("get $uid");
-      context.read<TeacherViewmodel>().fetchTeacher(uid);
+      final _teacher = context.read<TeacherViewmodel>();
+      final institue = context.read<InstituteViewModel>();
+
+      _teacher.fetchTeacher(uid).then((_) {
+        final iId= _teacher.teacher?.instituteId;
+        if(iId != null) {
+          institue.getInstitute(iId);
+        } 
+      });
+
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final _teacherVM = context.watch<TeacherViewmodel>();
+    final _institueVM = context.watch<InstituteViewModel>();
     final String name = _teacherVM.teacher?.name ?? "Teacher";
     final String email = _teacherVM.teacher?.email ?? "Unknown";
+    final double latitude = _institueVM.instituteModel?.geoPoint.latitude ?? 0.0;
+    final double longitude = _institueVM.instituteModel?.geoPoint.longitude ?? 0.0;
     if (_teacherVM.isLoading) {
       return const Center(child: CircularProgressIndicator.adaptive());
     }
-
     if (_teacherVM.error != null) {
       return Center(child: Text(_teacherVM.error.toString()));
     }
@@ -103,7 +114,7 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children:  [
                     Row(
                       children: [
                         Icon(Icons.location_on, color: Colors.red),
@@ -120,8 +131,12 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
 
                     SizedBox(height: 10),
 
-                    Text("Latitude : 26.8467"),
-                    Text("Longitude : 80.9462"),
+                    Text(_institueVM.instituteModel == null
+      ? "Loading location..."
+      : "Latitude : ${_institueVM.instituteModel!.geoPoint.latitude}",),
+                    Text(_institueVM.instituteModel == null
+      ? "Loading location..."
+      : "Latitude : ${_institueVM.instituteModel!.geoPoint.longitude}",),
 
                     SizedBox(height: 8),
 
