@@ -64,5 +64,4 @@ class TeacherViewmodel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 }

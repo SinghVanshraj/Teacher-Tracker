@@ -14,7 +14,7 @@ class InstituteModel {
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'geoPoint' : geoPoint,
+      'location' : geoPoint,
       'radius' : radius
     };
   }
@@ -22,8 +22,8 @@ class InstituteModel {
   factory InstituteModel.fromJson(Map<String, dynamic> json) {
     return InstituteModel(
       name: json['name'],
-      geoPoint: json['geoPoint'],
-      radius: json['radius'],
+      geoPoint: json['location'] as GeoPoint,
+      radius: (json['radius'] as num).toDouble(),
     );
   }
 }

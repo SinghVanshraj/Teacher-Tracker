@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:teacher_tracker/core/services/firebase_services.dart';
 import 'package:teacher_tracker/features/institute/models/institute_model.dart';
 import 'package:teacher_tracker/features/teacher/models/teacher_model.dart';
@@ -75,10 +76,37 @@ class FirebaseTeachersDatabase {
           .collection("institutes")
           .doc(instituteId)
           .get();
+
       return _instituteDataBase(docRef);
     } catch (e) {
       debugPrint(e.toString());
       return null;
     }
+  }
+
+  Future<Position> getTeacherLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    if (!serviceEnabled) {
+      throw Exception("Unable to fetch location");
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception("Unable to fetch location");
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception("Permission denied forever");
+    }
+
+    return await Geolocator.getCurrentPosition(
+      locationSettings: AndroidSettings(accuracy: LocationAccuracy.high),
+    );
   }
 }

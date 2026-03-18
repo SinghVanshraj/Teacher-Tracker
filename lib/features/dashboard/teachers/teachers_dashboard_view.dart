@@ -24,12 +24,12 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
       final institue = context.read<InstituteViewModel>();
 
       _teacher.fetchTeacher(uid).then((_) {
-        final iId= _teacher.teacher?.instituteId;
-        if(iId != null) {
+        final iId = _teacher.teacher?.instituteId;
+        debugPrint("Institute $iId");
+        if (iId != null) {
           institue.getInstitute(iId);
-        } 
+        }
       });
-
     });
   }
 
@@ -39,9 +39,8 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
     final _institueVM = context.watch<InstituteViewModel>();
     final String name = _teacherVM.teacher?.name ?? "Teacher";
     final String email = _teacherVM.teacher?.email ?? "Unknown";
-    final double latitude = _institueVM.instituteModel?.geoPoint.latitude ?? 0.0;
-    final double longitude = _institueVM.instituteModel?.geoPoint.longitude ?? 0.0;
-    if (_teacherVM.isLoading) {
+
+    if (_teacherVM.isLoading || _institueVM.isLoading) {
       return const Center(child: CircularProgressIndicator.adaptive());
     }
     if (_teacherVM.error != null) {
@@ -114,7 +113,7 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children:  [
+                  children: [
                     Row(
                       children: [
                         Icon(Icons.location_on, color: Colors.red),
@@ -131,12 +130,16 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
 
                     SizedBox(height: 10),
 
-                    Text(_institueVM.instituteModel == null
-      ? "Loading location..."
-      : "Latitude : ${_institueVM.instituteModel!.geoPoint.latitude}",),
-                    Text(_institueVM.instituteModel == null
-      ? "Loading location..."
-      : "Latitude : ${_institueVM.instituteModel!.geoPoint.longitude}",),
+                    Text(
+                      _institueVM.instituteModel == null
+                          ? "Loading location..."
+                          : "Latitude : ${_institueVM.instituteModel!.geoPoint.latitude}",
+                    ),
+                    Text(
+                      _institueVM.instituteModel == null
+                          ? "Loading location..."
+                          : "Latitude : ${_institueVM.instituteModel!.geoPoint.longitude}",
+                    ),
 
                     SizedBox(height: 8),
 

@@ -21,10 +21,11 @@ class InstituteViewModel extends ChangeNotifier {
       InstituteModel? institute = await _firestore.getInstitute(
         instituteId: iId,
       );
-      if (_instituteModel == null) {
+      if (institute == null) {
         _error = "Something went wrong";
       } else {
         _instituteModel = institute;
+        debugPrint("Institute set: ${_instituteModel?.geoPoint}");
       }
     } catch (e) {
       debugPrint(e.toString());
