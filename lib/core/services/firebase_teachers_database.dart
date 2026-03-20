@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:teacher_tracker/core/services/firebase_services.dart';
 import 'package:teacher_tracker/features/institute/models/institute_model.dart';
+import 'package:teacher_tracker/features/location/models/location_model.dart';
 import 'package:teacher_tracker/features/teacher/models/teacher_model.dart';
 
 class FirebaseTeachersDatabase {
@@ -84,7 +87,7 @@ class FirebaseTeachersDatabase {
     }
   }
 
-  Future<Position> getTeacherLocation() async {
+  Stream<LocationModel> getTeacherLocation() async* {
     bool serviceEnabled;
     LocationPermission permission;
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -105,8 +108,16 @@ class FirebaseTeachersDatabase {
       throw Exception("Permission denied forever");
     }
 
-    return await Geolocator.getCurrentPosition(
-      locationSettings: AndroidSettings(accuracy: LocationAccuracy.high),
+    yield* Geolocator.getPositionStream(
+      locationSettings: AndroidSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 1,
+      ),
+    ).map(
+      (position) => LocationModel(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      ),
     );
   }
 }

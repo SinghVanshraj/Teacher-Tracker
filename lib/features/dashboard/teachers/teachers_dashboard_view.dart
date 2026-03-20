@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:teacher_tracker/core/services/firebase_teachers_database.dart';
 import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
 import 'package:teacher_tracker/features/institute/viewmodels/institute_view_model.dart';
+import 'package:teacher_tracker/features/location/viewmodels/location_viewmodel.dart';
 import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 
 class TeachersDashboardView extends StatefulWidget {
@@ -22,6 +24,10 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
       final uid = context.read<AuthViewModel>().user!.uid;
       final _teacher = context.read<TeacherViewmodel>();
       final institue = context.read<InstituteViewModel>();
+      final locationVM = context.read<LocationViewmodel>();
+      final service = FirebaseTeachersDatabase();
+
+      locationVM.startTracking(service.getTeacherLocation());
 
       _teacher.fetchTeacher(uid).then((_) {
         final iId = _teacher.teacher?.instituteId;
@@ -35,8 +41,11 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
 
   @override
   Widget build(BuildContext context) {
+    final _authVM = context.watch<AuthViewModel>();
     final _teacherVM = context.watch<TeacherViewmodel>();
     final _institueVM = context.watch<InstituteViewModel>();
+    final _locationVM = context.watch<LocationViewmodel>();
+    final String uid = _authVM.user?.uid ?? "";
     final String name = _teacherVM.teacher?.name ?? "Teacher";
     final String email = _teacherVM.teacher?.email ?? "Unknown";
 
@@ -80,7 +89,7 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
               child: ListTile(
                 leading: CircleAvatar(radius: 25, child: Icon(Icons.person)),
                 title: Text("Teacher ID: $email"),
-                subtitle: Text("ABC Public School"),
+                subtitle: Text(_institueVM.instituteModel?.name ?? ""),
               ),
             ),
 
@@ -130,16 +139,8 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
 
                     SizedBox(height: 10),
 
-                    Text(
-                      _institueVM.instituteModel == null
-                          ? "Loading location..."
-                          : "Latitude : ${_institueVM.instituteModel!.geoPoint.latitude}",
-                    ),
-                    Text(
-                      _institueVM.instituteModel == null
-                          ? "Loading location..."
-                          : "Latitude : ${_institueVM.instituteModel!.geoPoint.longitude}",
-                    ),
+                    Text(_locationVM.currentLocation?.latitude.toString() ?? 0.toString()),
+                    Text(_locationVM.currentLocation?.longitude.toString() ?? 0.toString()),
 
                     SizedBox(height: 8),
 

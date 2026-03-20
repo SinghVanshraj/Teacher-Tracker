@@ -1,17 +1,30 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:teacher_tracker/features/location/models/location_model.dart';
 
 class LocationViewmodel extends ChangeNotifier {
-  LocationModel? _locationModel;
-  bool _tracking = false;
-  bool get tracking => _tracking;
-  String? _error;
-  String? get error => _error;
+  LocationModel? _currentLocation;
+  LocationModel? get currentLocation => _currentLocation;
 
-  Future<void> getCurrentLocation() {
+  StreamSubscription? _streamSubscription;
 
+  void startTracking(Stream<LocationModel> locationServiceStream) {
+    _streamSubscription = locationServiceStream.listen((location) {
+      _currentLocation = location;
+      notifyListeners();
+    });
   }
-  Future<void> checkPermission() {
-    
+
+  void stopTracking() {
+    _streamSubscription?.cancel();
+  }
+
+  void resumeTracking() {
+    _streamSubscription?.resume();
+  }
+
+  void pauseTracking() {
+    _streamSubscription?.pause();
   }
 }

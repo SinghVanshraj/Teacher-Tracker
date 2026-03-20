@@ -4,6 +4,7 @@ import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
 import 'package:teacher_tracker/features/auth/views/auth_view.dart';
 import 'package:teacher_tracker/features/dashboard/admin/admin_view_model.dart';
 import 'package:teacher_tracker/features/institute/viewmodels/institute_view_model.dart';
+import 'package:teacher_tracker/features/location/viewmodels/location_viewmodel.dart';
 import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 import 'package:teacher_tracker/firebase_options.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => TeacherViewmodel()),
         ChangeNotifierProvider(create: (_) => AdminViewModel()),
         ChangeNotifierProvider(create: (_) => InstituteViewModel()),
+        ChangeNotifierProvider(create: (_) => LocationViewmodel())
       ],
       child: const MyApp(),
     ),
