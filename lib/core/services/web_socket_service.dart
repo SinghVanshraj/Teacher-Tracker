@@ -1,19 +1,61 @@
+import 'dart:async';
+
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketService {
-  late WebSocketChannel _channel;
+  WebSocketChannel? _channel;
+  final _controller = StreamController<dynamic>.broadcast();
+  Stream<dynamic> get stream => _controller.stream;
 
-  Stream get stream => _channel.stream;
+  bool _isConnected = false;
+  bool get isConnected => _isConnected;
 
-  void connectStream(String url) {
-    _channel = WebSocketChannel.connect(Uri.parse(url));
+  void connect(String url) {
+    try {
+      _channel = WebSocketChannel.connect(Uri.parse(url));
+
+      _isConnected = true;
+
+      _channel!.stream.listen(
+        (message) {
+          _controller.add(message);
+        },
+        onError: (error) {
+          print("Websocket");
+          _isConnected = false;
+        },
+        onDone: () {
+          print("object");
+          _isConnected = false;
+        },
+      );
+    } catch (e) {
+      print("object");
+      _isConnected = false;
+    }
   }
 
-  void sendLocation(String location) {
-    _channel.sink.add(location);
+  void send(dynamic data) {
+    if (_channel != null && _isConnected) {
+      _channel!.sink.add(data);
+    } else {
+      print("WebSocket not connected");
+    }
   }
 
-  void disconnectLocation() {
-    _channel.sink.close();
+  void disconnect() {
+    _channel?.sink.close();
+    _isConnected = false;
+  }
+
+  Future<void> reconnect(String url) async {
+    disconnect();
+    await Future.delayed(const Duration(seconds: 2));
+    connect(url);
+  }
+
+  void dispose() {
+    _controller.close();
+    disconnect();
   }
 }
