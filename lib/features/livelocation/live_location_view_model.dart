@@ -5,11 +5,12 @@ import 'package:teacher_tracker/core/services/web_socket_service.dart';
 
 class LiveLocationViewModel extends ChangeNotifier {
   final WebSocketService _service = WebSocketService();
-
-  bool get _isConnected => _service.isConnected;
+  bool _isConnected = false;
+  bool get isConnected => _isConnected;
 
   void connect(String url) {
     _service.connect(url);
+    _isConnected = true;
     notifyListeners();
   }
 
@@ -27,7 +28,6 @@ class LiveLocationViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _service.disconnect();
     super.dispose();
   }
