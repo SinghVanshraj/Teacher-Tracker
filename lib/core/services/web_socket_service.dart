@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WebSocketService {
@@ -21,16 +22,16 @@ class WebSocketService {
           _controller.add(message);
         },
         onError: (error) {
-          print("Websocket");
+          debugPrint("Websocket");
           _isConnected = false;
         },
         onDone: () {
-          print("object");
+          debugPrint("object");
           _isConnected = false;
         },
       );
     } catch (e) {
-      print("object");
+      debugPrint("object");
       _isConnected = false;
     }
   }
@@ -39,7 +40,7 @@ class WebSocketService {
     if (_channel != null && _isConnected) {
       _channel!.sink.add(data);
     } else {
-      print("WebSocket not connected");
+      debugPrint("WebSocket not connected");
     }
   }
 
