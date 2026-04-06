@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
+import 'package:teacher_tracker/features/dashboard/admin/admin_view_model.dart';
+import 'package:teacher_tracker/features/institute/viewmodels/institute_view_model.dart';
+import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 
 class TeacherMapView extends StatefulWidget {
   const TeacherMapView({super.key});
@@ -12,10 +16,11 @@ class TeacherMapView extends StatefulWidget {
 class _TeacherMapViewState extends State<TeacherMapView> {
   @override
   Widget build(BuildContext context) {
+    final _teacherVM = context.watch<TeacherViewmodel>();
+    final _adminVM = context.watch<AdminViewModel>();
+    final _institueVM = context.watch<InstituteViewModel>();
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Teacher Tracker"),
-      ),
+      appBar: AppBar(title: const Text("Teacher Tracker")),
       body: Stack(
         children: [
           FlutterMap(
@@ -27,7 +32,7 @@ class _TeacherMapViewState extends State<TeacherMapView> {
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 subdomains: const ['a', 'b', 'c'],
-                userAgentPackageName: 'com.example.teacher_tracker', 
+                userAgentPackageName: 'com.example.teacher_tracker',
               ),
               MarkerLayer(
                 markers: [
@@ -57,7 +62,9 @@ class _TeacherMapViewState extends State<TeacherMapView> {
                   children: const [
                     CircleAvatar(
                       radius: 20,
-                      backgroundImage: NetworkImage("https://i.pravatar.cc/300"),
+                      backgroundImage: NetworkImage(
+                        "https://i.pravatar.cc/300",
+                      ),
                     ),
                     SizedBox(width: 10),
                     Text("Mr. John Doe - On the way to school"),
