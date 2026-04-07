@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:native_geofence/native_geofence.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_tracker/core/services/firebase_teachers_database.dart';
 import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
@@ -45,7 +47,6 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
     final _teacherVM = context.watch<TeacherViewmodel>();
     final _institueVM = context.watch<InstituteViewModel>();
     final _locationVM = context.watch<LocationViewmodel>();
-    final String uid = _authVM.user?.uid ?? "";
     final String name = _teacherVM.teacher?.name ?? "Teacher";
     final String email = _teacherVM.teacher?.email ?? "Unknown";
 
@@ -56,11 +57,25 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
       return Center(child: Text(_teacherVM.error.toString()));
     }
 
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text("Teacher Dashboard"),
         centerTitle: true,
         elevation: 0,
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Logout'),
+              onTap: () async {
+                await _authVM.signOut();
+              },
+            ),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -139,8 +154,14 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
 
                     SizedBox(height: 10),
 
-                    Text(_locationVM.currentLocation?.latitude.toString() ?? 0.toString()),
-                    Text(_locationVM.currentLocation?.longitude.toString() ?? 0.toString()),
+                    Text(
+                      _locationVM.currentLocation?.latitude.toString() ??
+                          0.toString(),
+                    ),
+                    Text(
+                      _locationVM.currentLocation?.longitude.toString() ??
+                          0.toString(),
+                    ),
 
                     SizedBox(height: 8),
 

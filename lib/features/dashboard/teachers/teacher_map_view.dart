@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:native_geofence/native_geofence.dart';
 import 'package:provider/provider.dart';
+import 'package:teacher_tracker/core/services/firebase_teachers_database.dart';
+import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
 import 'package:teacher_tracker/features/dashboard/admin/admin_view_model.dart';
 import 'package:teacher_tracker/features/institute/viewmodels/institute_view_model.dart';
+import 'package:teacher_tracker/features/location/viewmodels/location_viewmodel.dart';
 import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 
 class TeacherMapView extends StatefulWidget {
@@ -15,17 +19,73 @@ class TeacherMapView extends StatefulWidget {
 
 class _TeacherMapViewState extends State<TeacherMapView> {
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (!mounted) return;
+      final uid = context.read<AuthViewModel>().user!.uid;
+      final _teacher = context.read<TeacherViewmodel>();
+      final institue = context.read<InstituteViewModel>();
+      final locationVM = context.read<LocationViewmodel>();
+      final service = FirebaseTeachersDatabase();
+
+      locationVM.startTracking(service.getTeacherLocation());
+
+      _teacher.fetchTeacher(uid).then((_) {
+        final iId = _teacher.teacher?.instituteId;
+        debugPrint("Institute $iId");
+        if (iId != null) {
+          institue.getInstitute(iId);
+        }
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final _teacherVM = context.watch<TeacherViewmodel>();
     final _adminVM = context.watch<AdminViewModel>();
     final _institueVM = context.watch<InstituteViewModel>();
+
+    if (_teacherVM.isLoading || _institueVM.isLoading) {
+      return const Center(child: CircularProgressIndicator.adaptive());
+    }
+    if (_teacherVM.error != null) {
+      return Center(child: Text(_teacherVM.error.toString()));
+    }
+
+    Geofence? geoInstitute;
+    LatLng? geoLatLng;
+    double? radius;
+    final institute = _institueVM.instituteModel;
+    if (institute != null) {
+      geoInstitute = Geofence(
+        id: institute.name,
+        location: Location(
+          latitude: institute.geoPoint.latitude,
+          longitude: institute.geoPoint.longitude,
+        ),
+        radiusMeters: institute.radius,
+        iosSettings: IosGeofenceSettings(initialTrigger: false),
+        androidSettings: AndroidGeofenceSettings(
+          initialTriggers: {GeofenceEvent.enter, GeofenceEvent.exit},
+        ),
+        triggers: {GeofenceEvent.enter, GeofenceEvent.exit},
+      );
+
+      geoLatLng = LatLng(
+        institute.geoPoint.latitude,
+        institute.geoPoint.longitude,
+      );
+      radius = institute.radius;
+    }
     return Scaffold(
       appBar: AppBar(title: const Text("Teacher Tracker")),
       body: Stack(
         children: [
           FlutterMap(
             options: MapOptions(
-              initialCenter: LatLng(28.4629, 77.4901),
+              initialCenter: geoLatLng ?? LatLng(28.4743879, 77.5039906),
               initialZoom: 14.5,
             ),
             children: [
@@ -34,20 +94,33 @@ class _TeacherMapViewState extends State<TeacherMapView> {
                 subdomains: const ['a', 'b', 'c'],
                 userAgentPackageName: 'com.example.teacher_tracker',
               ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: LatLng(28.4629, 77.4901),
-                    width: 50,
-                    height: 50,
-                    child: const Icon(
-                      Icons.location_on,
-                      color: Colors.red,
-                      size: 40,
+              if (geoLatLng != null && radius != null)
+                CircleLayer(
+                  circles: [
+                    CircleMarker(
+                      point: geoLatLng,
+                      radius: radius,
+                      useRadiusInMeter: true,
+                      color: Colors.blue.withOpacity(0.2),
+                      borderColor: Colors.blue,
+                      borderStrokeWidth: 2,
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              // MarkerLayer(
+              //   markers: [
+              //     Marker(
+              //       point: LatLng(28.4629, 77.4901),
+              //       width: 50,
+              //       height: 50,
+              //       child: const Icon(
+              //         Icons.location_on,
+              //         color: Colors.red,
+              //         size: 40,
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
 
