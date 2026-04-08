@@ -56,7 +56,7 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
     if (_teacherVM.error != null) {
       return Center(child: Text(_teacherVM.error.toString()));
     }
-
+    
     
     return Scaffold(
       appBar: AppBar(

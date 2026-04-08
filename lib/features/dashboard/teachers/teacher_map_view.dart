@@ -43,9 +43,12 @@ class _TeacherMapViewState extends State<TeacherMapView> {
 
   @override
   Widget build(BuildContext context) {
+    final _authVM = context.watch<AuthViewModel>();
     final _teacherVM = context.watch<TeacherViewmodel>();
-    final _adminVM = context.watch<AdminViewModel>();
     final _institueVM = context.watch<InstituteViewModel>();
+    final _locationVM = context.watch<LocationViewmodel>();
+    final String name = _teacherVM.teacher?.name ?? "Teacher";
+    final String email = _teacherVM.teacher?.email ?? "Unknown";
 
     if (_teacherVM.isLoading || _institueVM.isLoading) {
       return const Center(child: CircularProgressIndicator.adaptive());
@@ -54,6 +57,7 @@ class _TeacherMapViewState extends State<TeacherMapView> {
       return Center(child: Text(_teacherVM.error.toString()));
     }
 
+    debugPrint("hello ${_institueVM.instituteModel?.radius ?? 0.toString()}");
     Geofence? geoInstitute;
     LatLng? geoLatLng;
     double? radius;
@@ -107,20 +111,23 @@ class _TeacherMapViewState extends State<TeacherMapView> {
                     ),
                   ],
                 ),
-              // MarkerLayer(
-              //   markers: [
-              //     Marker(
-              //       point: LatLng(28.4629, 77.4901),
-              //       width: 50,
-              //       height: 50,
-              //       child: const Icon(
-              //         Icons.location_on,
-              //         color: Colors.red,
-              //         size: 40,
-              //       ),
-              //     ),
-              //   ],
-              // ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: LatLng(
+                      _locationVM.currentLocation?.latitude ?? 0,
+                      _locationVM.currentLocation?.longitude ?? 0,
+                    ),
+                    width: 50,
+                    height: 50,
+                    child: const Icon(
+                      Icons.location_on,
+                      color: Colors.red,
+                      size: 40,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
 
