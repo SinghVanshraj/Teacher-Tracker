@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_tracker/features/dashboard/admin/admin_view_model.dart';
+import 'package:teacher_tracker/features/institute/models/institute_model.dart';
 import 'package:teacher_tracker/features/institute/viewmodels/institute_view_model.dart';
 import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 
@@ -17,10 +18,10 @@ class _AdminMapViewState extends State<AdminMapView> {
   @override
   void initState() {
     super.initState();
-    // Safe: read does not subscribe
     Future.microtask(() {
+      if (!mounted) return null;
       context.read<AdminViewModel>().fetchTeachers();
-      context.read<InstituteViewModel>();
+      context.read<AdminViewModel>().fetchInstitues();
     });
   }
 
@@ -29,7 +30,8 @@ class _AdminMapViewState extends State<AdminMapView> {
     final _teacherVM = context.watch<TeacherViewmodel>();
     final _adminVM = context.watch<AdminViewModel>();
     final _institueVM = context.watch<InstituteViewModel>();
-    final listOfTeachers = _adminVM.teachers?.docs.toList();
+    final listOfTeachers = _adminVM.teachers?.docs.toList() ?? [];
+    final listOfInstitues = _adminVM.institues?.docs.toList() ?? [];
 
     return Scaffold(
       appBar: AppBar(title: const Text("Teacher Tracker")),
@@ -45,6 +47,25 @@ class _AdminMapViewState extends State<AdminMapView> {
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 subdomains: const ['a', 'b', 'c'],
                 userAgentPackageName: 'com.example.teacher_tracker',
+              ),
+
+              CircleLayer(
+                circles: listOfInstitues.map((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final institute = InstituteModel.fromJson(data);
+
+                  return CircleMarker(
+                    point: LatLng(
+                      institute.geoPoint.latitude,
+                      institute.geoPoint.longitude,
+                    ),
+                    radius: institute.radius,
+                    useRadiusInMeter: true,
+                    color: Colors.blue.withOpacity(0.2),
+                    borderColor: Colors.blue,
+                    borderStrokeWidth: 2,
+                  );
+                }).toList(),
               ),
               MarkerLayer(
                 markers: [

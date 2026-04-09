@@ -7,6 +7,8 @@ class AdminViewModel extends ChangeNotifier {
 
   QuerySnapshot? _teachers;
   QuerySnapshot? get teachers => _teachers;
+  QuerySnapshot? _institues;
+  QuerySnapshot? get institues => _institues;
   bool _isLoading = false;
   bool get isLoading => _isLoading;
   String? _error;
@@ -19,6 +21,21 @@ class AdminViewModel extends ChangeNotifier {
 
     try {
       _teachers = await _firestore.getTeachers();
+    } catch (e) {
+      debugPrint(e.toString());
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchInstitues() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _institues = await _firestore.getInstitutes();
     } catch (e) {
       debugPrint(e.toString());
     } finally {

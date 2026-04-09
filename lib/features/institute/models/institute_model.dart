@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 class InstituteModel {
   final String name;
   final GeoPoint geoPoint;
@@ -12,17 +11,13 @@ class InstituteModel {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'location' : geoPoint,
-      'radius' : radius
-    };
+    return {'name': name, 'geopoint': geoPoint, 'radius': radius};
   }
 
   factory InstituteModel.fromJson(Map<String, dynamic> json) {
     return InstituteModel(
       name: json['name'],
-      geoPoint: json['location'] as GeoPoint,
+      geoPoint: json['geopoint'] as GeoPoint,
       radius: (json['radius'] as num).toDouble(),
     );
   }

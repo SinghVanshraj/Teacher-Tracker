@@ -73,6 +73,10 @@ class FirebaseTeachersDatabase {
     return _firestore.collection("teachers").get();
   }
 
+  Future<QuerySnapshot> getInstitutes() {
+    return _firestore.collection("institutes").get();
+  }
+
   Future<InstituteModel?> getInstitute({required String instituteId}) async {
     try {
       final docRef = await _firestore
