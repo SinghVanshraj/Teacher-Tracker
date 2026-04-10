@@ -23,6 +23,7 @@ class _TeacherMapViewState extends State<TeacherMapView> {
     super.initState();
     Future.microtask(() {
       if (!mounted) return;
+      
       final uid = context.read<AuthViewModel>().user!.uid;
       final _teacher = context.read<TeacherViewmodel>();
       final institue = context.read<InstituteViewModel>();

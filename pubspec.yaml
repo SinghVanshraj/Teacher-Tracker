@@ -51,6 +51,7 @@ dependencies:
   latlong2: ^0.9.1
   flutter_map_cache: ^2.0.0+1
   native_geofence: ^1.2.1
+  geofencing_api: ^2.0.0
 
 dev_dependencies:
   flutter_test:
