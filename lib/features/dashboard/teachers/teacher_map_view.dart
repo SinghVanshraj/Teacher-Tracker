@@ -20,9 +20,9 @@ class _TeacherMapViewState extends State<TeacherMapView> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
-      
+
       final uid = context.read<AuthViewModel>().user!.uid;
       final _teacher = context.read<TeacherViewmodel>();
       final institue = context.read<InstituteViewModel>();
@@ -31,13 +31,11 @@ class _TeacherMapViewState extends State<TeacherMapView> {
 
       locationVM.startTracking(service.getTeacherLocation());
 
-      _teacher.fetchTeacher(uid).then((_) {
-        final iId = _teacher.teacher?.instituteId;
-        debugPrint("Institute $iId");
-        if (iId != null) {
-          institue.getInstitute(iId);
-        }
-      });
+      await _teacher.teacher?.instituteId;
+      final iId = _teacher.teacher?.instituteId;
+      if (iId != null) {
+        await institue.getInstitute(iId);
+      }
     });
   }
 
@@ -62,19 +60,6 @@ class _TeacherMapViewState extends State<TeacherMapView> {
     double? radius;
     final institute = _institueVM.instituteModel;
     if (institute != null) {
-      geoInstitute = Geofence(
-        id: institute.name,
-        location: Location(
-          latitude: institute.geoPoint.latitude,
-          longitude: institute.geoPoint.longitude,
-        ),
-        radiusMeters: institute.radius,
-        iosSettings: IosGeofenceSettings(initialTrigger: false),
-        androidSettings: AndroidGeofenceSettings(
-          initialTriggers: {GeofenceEvent.enter, GeofenceEvent.exit},
-        ),
-        triggers: {GeofenceEvent.enter, GeofenceEvent.exit},
-      );
 
       geoLatLng = LatLng(
         institute.geoPoint.latitude,
