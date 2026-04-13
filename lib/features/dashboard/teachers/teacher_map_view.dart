@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:native_geofence/native_geofence.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_tracker/core/services/firebase_teachers_database.dart';
+import 'package:teacher_tracker/core/services/geofenceing_service.dart';
 import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
 import 'package:teacher_tracker/features/institute/viewmodels/institute_view_model.dart';
 import 'package:teacher_tracker/features/location/viewmodels/location_viewmodel.dart';
@@ -31,10 +32,16 @@ class _TeacherMapViewState extends State<TeacherMapView> {
 
       locationVM.startTracking(service.getTeacherLocation());
 
-      await _teacher.teacher?.instituteId;
+      await _teacher.fetchTeacher(uid);
       final iId = _teacher.teacher?.instituteId;
       if (iId != null) {
         await institue.getInstitute(iId);
+
+        GeofenceingService().createGeofence(
+          instituteName: institue.instituteModel!.name,
+          instituteLocation: institue.instituteModel!.geoPoint,
+          instituteRadius: institue.instituteModel!.radius,
+        );
       }
     });
   }
@@ -54,19 +61,17 @@ class _TeacherMapViewState extends State<TeacherMapView> {
     if (_teacherVM.error != null) {
       return Center(child: Text(_teacherVM.error.toString()));
     }
-
-    Geofence? geoInstitute;
     LatLng? geoLatLng;
     double? radius;
     final institute = _institueVM.instituteModel;
     if (institute != null) {
-
       geoLatLng = LatLng(
         institute.geoPoint.latitude,
         institute.geoPoint.longitude,
       );
       radius = institute.radius;
     }
+
     return Scaffold(
       appBar: AppBar(title: const Text("Teacher Tracker")),
       body: Stack(
@@ -131,7 +136,7 @@ class _TeacherMapViewState extends State<TeacherMapView> {
                       ),
                     ),
                     SizedBox(width: 10),
-                    Text("Mr. John Doe - On the way to school"),
+                    Text("You - On the way to school"),
                   ],
                 ),
               ),

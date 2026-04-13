@@ -1,13 +1,39 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:native_geofence/native_geofence.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 @pragma('vm:entry-point')
 Future<void> geofenceTriggered(GeofenceCallbackParams params) async {
+  final uid = FirebaseAuth.instance.currentUser?.uid;
+
+  if (uid == null) return;
+
+  final today = DateTime.now();
+  final currentStatus = "${today.year}-${today.month}-${today.day}";
+
+  final doc = FirebaseFirestore.instance
+      .collection('attendance')
+      .doc(uid)
+      .collection('dates')
+      .doc(currentStatus);
   if (params.event == GeofenceEvent.enter) {
+    await doc.set({
+      'attendance': "present",
+      'current status': "inside",
+    });
   } else if (params.event == GeofenceEvent.exit) {
+    await doc.set({
+      'attendance': "absent",
+      'current status': "outside",
+    });
   } else if (params.event == GeofenceEvent.dwell) {
+    await doc.set({
+      'attendance': "present",
+      'current status': "inside",
+    });
   }
 }
 
