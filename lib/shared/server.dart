@@ -47,7 +47,7 @@ void handleClient(WebSocket ws) {
                   'uid': sender?['uid'],
                   'lat': data['lat'],
                   'long': data['long'],
-                  'timestamp': data['timestamp'],
+                  'status': data['status'],
                 }),
               );
             }

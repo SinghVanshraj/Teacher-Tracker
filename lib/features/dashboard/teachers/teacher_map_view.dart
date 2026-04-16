@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:native_geofence/native_geofence.dart';
 import 'package:provider/provider.dart';
 import 'package:teacher_tracker/core/services/firebase_teachers_database.dart';
 import 'package:teacher_tracker/core/services/geofenceing_service.dart';
 import 'package:teacher_tracker/features/auth/viewmodels/auth_view_model.dart';
 import 'package:teacher_tracker/features/institute/viewmodels/institute_view_model.dart';
+import 'package:teacher_tracker/features/livelocation/live_location_view_model.dart';
 import 'package:teacher_tracker/features/location/viewmodels/location_viewmodel.dart';
 import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 
@@ -29,6 +29,8 @@ class _TeacherMapViewState extends State<TeacherMapView> {
       final institue = context.read<InstituteViewModel>();
       final locationVM = context.read<LocationViewmodel>();
       final service = FirebaseTeachersDatabase();
+      context.read<LiveLocationViewModel>().connect('ws://192.168.0.120:8080');
+
 
       locationVM.startTracking(service.getTeacherLocation());
 

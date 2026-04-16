@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:teacher_tracker/features/dashboard/admin/admin_view_model.dart';
 import 'package:teacher_tracker/features/institute/models/institute_model.dart';
 import 'package:teacher_tracker/features/institute/viewmodels/institute_view_model.dart';
+import 'package:teacher_tracker/features/livelocation/live_location_view_model.dart';
 import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 
 class AdminMapView extends StatefulWidget {
@@ -22,6 +23,7 @@ class _AdminMapViewState extends State<AdminMapView> {
       if (!mounted) return null;
       context.read<AdminViewModel>().fetchTeachers();
       context.read<AdminViewModel>().fetchInstitues();
+      context.read<LiveLocationViewModel>().connect('ws://192.168.0.120:8080');
     });
   }
 
