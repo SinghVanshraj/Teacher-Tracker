@@ -36,9 +36,22 @@ class LiveLocationViewModel extends ChangeNotifier {
     required String uid,
     required double lat,
     required double long,
+    required String name,
+    required String email,
+    required String department,
+    required String geofenceStatus,
   }) {
-    final data = jsonEncode({"uid": uid, "lat": lat, "long": long});
-
+    final data = jsonEncode({
+    'type': 'location',
+    'uid': uid,
+    'lat': lat,
+    'long': long,
+    'name': name,
+    'email': email,
+    'department': department,
+    'geofenceStatus': geofenceStatus,
+    'timestamp': DateTime.now().toIso8601String(),
+  });
     return _service.send(data);
   }
 

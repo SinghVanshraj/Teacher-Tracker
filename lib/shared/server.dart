@@ -1,18 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:flutter/rendering.dart';
-
 final Map<WebSocket, Map<String, String>> cilents = {};
 
 void main() async {
   final server = await HttpServer.bind(InternetAddress.anyIPv4, 8080);
-  debugPrint("WebSocket server running");
+  print("WebSocket server running");
 
   await for (HttpRequest request in server) {
     if (WebSocketTransformer.isUpgradeRequest(request)) {
       final ws = await WebSocketTransformer.upgrade(request);
-      debugPrint('New client connected');
+      print('New client connected');
       handleClient(ws);
     }
   }
@@ -28,7 +25,7 @@ void handleClient(WebSocket ws) {
 
         if (data['type'] == 'register') {
           cilents[ws] = {'role': data['role'], 'uid': data['uid']};
-          debugPrint("Registered");
+          print("Registered");
           return;
         }
 
@@ -36,7 +33,7 @@ void handleClient(WebSocket ws) {
           final sender = cilents[ws];
           if (sender?['role'] != 'teacher') return;
 
-          debugPrint('Location');
+          print('Location');
 
           cilents.forEach((cilent, info) {
             if (info['role'] == 'admin' &&
@@ -54,7 +51,7 @@ void handleClient(WebSocket ws) {
           });
         }
       } catch (e) {
-        debugPrint(e.toString());
+        print(e.toString());
       }
     },
     onDone: () {
