@@ -19,27 +19,27 @@ class _TeachersDashboardViewState extends State<TeachersDashboardView> {
   bool trackingActive = true;
 
   @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      if (!mounted) return;
-      final uid = context.read<AuthViewModel>().user!.uid;
-      final _teacher = context.read<TeacherViewmodel>();
-      final institue = context.read<InstituteViewModel>();
-      final locationVM = context.read<LocationViewmodel>();
-      final service = FirebaseTeachersDatabase();
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (!mounted) return;
+    final uid = context.read<AuthViewModel>().user!.uid;
+    final teacher = context.read<TeacherViewmodel>();
+    final institute = context.read<InstituteViewModel>();
+    final locationVM = context.read<LocationViewmodel>();
+    final service = FirebaseTeachersDatabase();
 
-      locationVM.startTracking(service.getTeacherLocation());
+    locationVM.startTracking(service.getTeacherLocation());
 
-      _teacher.fetchTeacher(uid).then((_) {
-        final iId = _teacher.teacher?.instituteId;
-        debugPrint("Institute $iId");
-        if (iId != null) {
-          institue.getInstitute(iId);
-        }
-      });
-    });
-  }
+    await teacher.fetchTeacher(uid);  // ✅ await instead of .then()
+    
+    final iId = teacher.teacher?.instituteId;
+    debugPrint("Institute $iId");
+    if (iId != null) {
+      await institute.getInstitute(iId);  // ✅ await
+    }
+  });
+}
 
   @override
   Widget build(BuildContext context) {
