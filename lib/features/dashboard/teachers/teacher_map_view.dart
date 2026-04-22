@@ -10,6 +10,9 @@ import 'package:teacher_tracker/features/livelocation/live_location_view_model.d
 import 'package:teacher_tracker/features/location/viewmodels/location_viewmodel.dart';
 import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 
+// ⚠️ Replace with your PC's local IP when running server.dart
+const String kServerUrl = 'ws://192.168.1.5:8080';
+
 class TeacherMapView extends StatefulWidget {
   const TeacherMapView({super.key});
 
@@ -25,47 +28,69 @@ class _TeacherMapViewState extends State<TeacherMapView> {
       if (!mounted) return;
 
       final uid = context.read<AuthViewModel>().user!.uid;
-      final _teacher = context.read<TeacherViewmodel>();
-      final institue = context.read<InstituteViewModel>();
+      final teacher = context.read<TeacherViewmodel>();
+      final institute = context.read<InstituteViewModel>();
       final locationVM = context.read<LocationViewmodel>();
+      final liveLocationVM = context.read<LiveLocationViewModel>();
       final service = FirebaseTeachersDatabase();
-      context.read<LiveLocationViewModel>().connect('ws://192.168.0.120:8080');
-
 
       locationVM.startTracking(service.getTeacherLocation());
 
-      await _teacher.fetchTeacher(uid);
-      final iId = _teacher.teacher?.instituteId;
-      if (iId != null) {
-        await institue.getInstitute(iId);
+      await teacher.fetchTeacher(uid);
 
-        GeofenceingService().createGeofence(
-          instituteName: institue.instituteModel!.name,
-          instituteLocation: institue.instituteModel!.geoPoint,
-          instituteRadius: institue.instituteModel!.radius,
+      final iId = teacher.teacher?.instituteId;
+      if (iId != null) {
+        await institute.getInstitute(iId);
+
+        await GeofenceingService().createGeofence(
+          instituteName: institute.instituteModel!.name,
+          instituteLocation: institute.instituteModel!.geoPoint,
+          instituteRadius: institute.instituteModel!.radius,
         );
       }
+
+      // ✅ Connect to WebSocket server
+      liveLocationVM.connect(
+        url: kServerUrl,
+        uid: uid,
+        role: 'teacher',
+      );
+
+      // ✅ Start sending location every 5 seconds
+      liveLocationVM.startSendingLocation(
+        lat: locationVM.currentLocation?.latitude ?? 0,
+        long: locationVM.currentLocation?.longitude ?? 0,
+        name: teacher.teacher?.name ?? '',
+        email: teacher.teacher?.email ?? '',
+        department: teacher.teacher?.department ?? '',
+        geofenceStatus: 'outside', // default, updated by geofence trigger
+      );
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    final _authVM = context.watch<AuthViewModel>();
-    final _teacherVM = context.watch<TeacherViewmodel>();
-    final _institueVM = context.watch<InstituteViewModel>();
-    final _locationVM = context.watch<LocationViewmodel>();
-    final String name = _teacherVM.teacher?.name ?? "Teacher";
-    final String email = _teacherVM.teacher?.email ?? "Unknown";
+  void dispose() {
+    context.read<LiveLocationViewModel>().disconnect();
+    super.dispose();
+  }
 
-    if (_teacherVM.isLoading || _institueVM.isLoading) {
+  @override
+  Widget build(BuildContext context) {
+    final teacherVM = context.watch<TeacherViewmodel>();
+    final instituteVM = context.watch<InstituteViewModel>();
+    final locationVM = context.watch<LocationViewmodel>();
+    final String name = teacherVM.teacher?.name ?? 'Teacher';
+
+    if (teacherVM.isLoading || instituteVM.isLoading) {
       return const Center(child: CircularProgressIndicator.adaptive());
     }
-    if (_teacherVM.error != null) {
-      return Center(child: Text(_teacherVM.error.toString()));
+    if (teacherVM.error != null) {
+      return Center(child: Text(teacherVM.error.toString()));
     }
+
     LatLng? geoLatLng;
     double? radius;
-    final institute = _institueVM.instituteModel;
+    final institute = instituteVM.instituteModel;
     if (institute != null) {
       geoLatLng = LatLng(
         institute.geoPoint.latitude,
@@ -74,13 +99,18 @@ class _TeacherMapViewState extends State<TeacherMapView> {
       radius = institute.radius;
     }
 
+    final LatLng teacherLatLng = LatLng(
+      locationVM.currentLocation?.latitude ?? 0,
+      locationVM.currentLocation?.longitude ?? 0,
+    );
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Teacher Tracker")),
+      appBar: AppBar(title: const Text('Teacher Tracker')),
       body: Stack(
         children: [
           FlutterMap(
             options: MapOptions(
-              initialCenter: geoLatLng ?? LatLng(28.4743879, 77.5039906),
+              initialCenter: geoLatLng ?? const LatLng(28.4743879, 77.5039906),
               initialZoom: 14.5,
             ),
             children: [
@@ -89,6 +119,8 @@ class _TeacherMapViewState extends State<TeacherMapView> {
                 subdomains: const ['a', 'b', 'c'],
                 userAgentPackageName: 'com.example.teacher_tracker',
               ),
+
+              // Institute geofence circle
               if (geoLatLng != null && radius != null)
                 CircleLayer(
                   circles: [
@@ -102,13 +134,12 @@ class _TeacherMapViewState extends State<TeacherMapView> {
                     ),
                   ],
                 ),
+
+              // Teacher's live location marker
               MarkerLayer(
                 markers: [
                   Marker(
-                    point: LatLng(
-                      _locationVM.currentLocation?.latitude ?? 0,
-                      _locationVM.currentLocation?.longitude ?? 0,
-                    ),
+                    point: teacherLatLng,
                     width: 50,
                     height: 50,
                     child: const Icon(
@@ -130,15 +161,13 @@ class _TeacherMapViewState extends State<TeacherMapView> {
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Row(
-                  children: const [
-                    CircleAvatar(
+                  children: [
+                    const CircleAvatar(
                       radius: 20,
-                      backgroundImage: NetworkImage(
-                        "https://i.pravatar.cc/300",
-                      ),
+                      backgroundImage: NetworkImage('https://i.pravatar.cc/300'),
                     ),
-                    SizedBox(width: 10),
-                    Text("You - On the way to school"),
+                    const SizedBox(width: 10),
+                    Text('You ($name)'),
                   ],
                 ),
               ),
