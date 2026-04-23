@@ -16,7 +16,7 @@ class LiveLocationViewModel extends ChangeNotifier {
 
   Timer? _locationTimer;
 
-  // Admin sees all teachers keyed by uid
+  
   final Map<String, LiveLocationModel> _teacherLocations = {};
   Map<String, LiveLocationModel> get teacherLocations => _teacherLocations;
 
@@ -30,7 +30,7 @@ class LiveLocationViewModel extends ChangeNotifier {
 
     _service.connect(url);
 
-    // Register with server after connecting
+    
     Future.delayed(const Duration(milliseconds: 500), () {
       _service.send(jsonEncode({
         'type': 'register',
@@ -64,7 +64,7 @@ class LiveLocationViewModel extends ChangeNotifier {
       if (data['type'] == 'location') {
         final location = LiveLocationModel.fromJson(data);
         if (_role == 'admin') {
-          // admin stores all teachers keyed by uid
+          
           _teacherLocations[location.uid] = location;
         }
       }
@@ -73,7 +73,7 @@ class LiveLocationViewModel extends ChangeNotifier {
     }
   }
 
-  // Teacher calls this to start sending location every 5 seconds
+  
   void startSendingLocation({
     required double lat,
     required double long,
@@ -85,7 +85,7 @@ class LiveLocationViewModel extends ChangeNotifier {
     if (_role != 'teacher') return;
     _locationTimer?.cancel();
 
-    // send immediately then every 5 seconds
+    
     _sendLocation(
       lat: lat,
       long: long,

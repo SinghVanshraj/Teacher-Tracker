@@ -10,7 +10,6 @@ import 'package:teacher_tracker/features/livelocation/live_location_view_model.d
 import 'package:teacher_tracker/features/location/viewmodels/location_viewmodel.dart';
 import 'package:teacher_tracker/features/teacher/viewmodels/teacher_viewmodel.dart';
 
-// ⚠️ Replace with your PC's local IP when running server.dart
 const String kServerUrl = 'ws://192.168.1.5:8080';
 
 class TeacherMapView extends StatefulWidget {
@@ -49,14 +48,11 @@ class _TeacherMapViewState extends State<TeacherMapView> {
         );
       }
 
-      // ✅ Connect to WebSocket server
       liveLocationVM.connect(
         url: kServerUrl,
         uid: uid,
         role: 'teacher',
       );
-
-      // ✅ Start sending location every 5 seconds
       liveLocationVM.startSendingLocation(
         lat: locationVM.currentLocation?.latitude ?? 0,
         long: locationVM.currentLocation?.longitude ?? 0,
