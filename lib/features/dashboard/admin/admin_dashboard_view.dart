@@ -17,60 +17,62 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      if (!mounted) return null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<AdminViewModel>().fetchTeachers();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final _authVM = context.watch<AuthViewModel>();
-    final _teachersList = context.watch<AdminViewModel>();
-    final int? numberOfTeacher = _teachersList.teachers?.docs.length;
-    final listOfTeachers = _teachersList.teachers?.docs.toList();
-    if (_teachersList.isLoading) {
-      return Center(child: const CircularProgressIndicator.adaptive());
+    final authVM = context.watch<AuthViewModel>();
+    final teachersList = context.watch<AdminViewModel>();
+    final int numberOfTeacher = teachersList.teachers?.docs.length ?? 0;
+    final listOfTeachers = teachersList.teachers?.docs.toList();
+
+    if (teachersList.isLoading) {
+      return const Center(child: CircularProgressIndicator.adaptive());
     }
-    if (_teachersList.error != null) {
-      return Center(child: Text(_teachersList.error.toString()));
+    if (teachersList.error != null) {
+      return Center(child: Text(teachersList.error.toString()));
     }
+
     final stats = [
       {
-        "title": "Total Teachers",
-        "value": numberOfTeacher.toString(),
-        "color": Colors.blue,
+        'title': 'Total Teachers',
+        'value': numberOfTeacher.toString(),
+        'color': Colors.blue,
       },
-      {"title": "Active Classes", "value": "12", "color": Colors.green},
-      {"title": "Pending Tasks", "value": "5", "color": Colors.orange},
+      {'title': 'Active Classes', 'value': '12', 'color': Colors.green},
+      {'title': 'Pending Tasks', 'value': '5', 'color': Colors.orange},
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Admin Dashboard"),
+        title: const Text('Admin Dashboard'),
         backgroundColor: Colors.deepPurple,
         actions: [
-          IconButton(icon: Icon(Icons.notifications), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
         ],
       ),
       drawer: Drawer(
         child: ListView(
           children: [
             ListTile(
-              leading: Icon(Icons.person_add_alt_1_rounded),
-              title: Text('Create New User'),
+              leading: const Icon(Icons.person_add_alt_1_rounded),
+              title: const Text('Create New User'),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SignInView()),
+                  MaterialPageRoute(builder: (context) => const SignInView()),
                 );
               },
             ),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Logout'),
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
               onTap: () async {
-                await _authVM.signOut();
+                await authVM.signOut();
               },
             ),
           ],
@@ -86,31 +88,30 @@ class _AdminDashboardViewState extends State<AdminDashboardView> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: stats.length,
-                separatorBuilder: (a, b) => SizedBox(width: 16),
+                separatorBuilder: (a, b) => const SizedBox(width: 16),
                 itemBuilder: (context, index) {
                   final stat = stats[index];
                   return StatsCard(
-                    title: stat["title"]! as String,
-                    value: stat["value"]! as String,
-                    color: stat["color"] as Color,
+                    title: stat['title']! as String,
+                    value: stat['value']! as String,
+                    color: stat['color'] as Color,
                   );
                 },
               ),
             ),
-
-            SizedBox(height: 20),
-
-            Text(
-              "Teachers",
+            const SizedBox(height: 20),
+            const Text(
+              'Teachers',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Expanded(
               child: ListView.separated(
                 itemCount: listOfTeachers?.length ?? 0,
-                separatorBuilder: (a, b) => SizedBox(height: 10),
+                separatorBuilder: (a, b) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
-                  final teacher = listOfTeachers![index].data() as Map<String,dynamic>;
+                  final teacher =
+                      listOfTeachers![index].data() as Map<String, dynamic>;
                   return TeacherListItem(
                     name: teacher['name'] ?? '',
                     subject: teacher['department'] ?? '',
