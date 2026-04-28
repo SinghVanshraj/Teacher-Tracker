@@ -19,6 +19,8 @@ class AdminMapView extends StatefulWidget {
 }
 
 class _AdminMapViewState extends State<AdminMapView> {
+  bool _isInit = false;
+  late LiveLocationViewModel _liveLocationVM;
   @override
   void initState() {
     super.initState();
@@ -26,23 +28,18 @@ class _AdminMapViewState extends State<AdminMapView> {
       if (!mounted) return;
 
       final uid = context.read<AuthViewModel>().user!.uid;
-      final liveLocationVM = context.read<LiveLocationViewModel>();
+      _liveLocationVM = context.read<LiveLocationViewModel>();
 
       context.read<AdminViewModel>().fetchTeachers();
       context.read<AdminViewModel>().fetchInstitues();
 
-      // ✅ Connect as admin to receive teacher locations
-      liveLocationVM.connect(
-        url: kServerUrl,
-        uid: uid,
-        role: 'admin',
-      );
+      _liveLocationVM.connect(url: kServerUrl, uid: uid, role: 'admin');
     });
   }
 
   @override
   void dispose() {
-    context.read<LiveLocationViewModel>().disconnect();
+    _liveLocationVM.disconnect();
     super.dispose();
   }
 
@@ -52,7 +49,6 @@ class _AdminMapViewState extends State<AdminMapView> {
     final liveLocationVM = context.watch<LiveLocationViewModel>();
 
     final listOfInstitutes = adminVM.institues?.docs ?? [];
-    // ✅ Real teacher locations from WebSocket
     final Map<String, LiveLocationModel> teacherLocations =
         liveLocationVM.teacherLocations;
 
@@ -185,8 +181,7 @@ class _AdminMapViewState extends State<AdminMapView> {
                   itemCount: teacherLocations.length,
                   separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, index) {
-                    final teacher =
-                        teacherLocations.values.elementAt(index);
+                    final teacher = teacherLocations.values.elementAt(index);
                     final isInside = teacher.geofenceStatus == 'inside';
                     return ListTile(
                       leading: Icon(
@@ -194,10 +189,14 @@ class _AdminMapViewState extends State<AdminMapView> {
                         color: isInside ? Colors.green : Colors.red,
                         size: 12,
                       ),
-                      title: Text(teacher.name,
-                          style: const TextStyle(fontSize: 13)),
-                      subtitle: Text(teacher.department,
-                          style: const TextStyle(fontSize: 11)),
+                      title: Text(
+                        teacher.name,
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                      subtitle: Text(
+                        teacher.department,
+                        style: const TextStyle(fontSize: 11),
+                      ),
                       trailing: Text(
                         isInside ? 'Inside' : 'Outside',
                         style: TextStyle(
